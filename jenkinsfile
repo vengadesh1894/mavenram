@@ -1,0 +1,46 @@
+pipeline
+{
+    agent any
+    stages
+    {
+        stage('continousDownload')
+        {
+            steps
+            {
+                git 'https://github.com/vengadesh1894/maven.git'
+            }
+        }
+        stage('continousBuild')
+        {
+            steps
+            {
+                sh 'mvn package'
+            }
+        }
+        stage('continousDeployment')
+        {
+            steps
+            {
+                deploy adapters: [tomcat9(credentialsId: 'fbfe6bd8-2cac-4d81-b47a-d62ac1dfe32a', path: '', url: 'http://172.31.0.233:8080')], contextPath: 'testapp1', war: '**/*.war'
+            }
+        }
+         stage('continousTesting')
+        {
+            steps
+            {
+                git 'https://github.com/vengadesh1894/FunctionalTesting.git'
+                sh 'java -jar /var/lib/jenkins/workspace/declarativepipeline1/testing.jar'
+            }
+        }
+        stage('continousDelivery')
+        {
+            steps
+            {
+                input message: 'need to approve', submitter: 'thiru'
+                deploy adapters: [tomcat9(credentialsId: 'fbfe6bd8-2cac-4d81-b47a-d62ac1dfe32a', path: '', url: 'http://172.31.0.81:8080')], contextPath: 'prodapp', war: '**/*.war'
+                
+            }
+        }
+    }
+}    
+
